@@ -1,0 +1,19 @@
+---
+version: '3'
+services:
+  fast-anoncreds:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: fast-anoncreds
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    ports:
+      - "8000:8000"
+
+  redis:
+    image: redis
+    ports:
+      - "8000:8000"
