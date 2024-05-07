@@ -16,4 +16,4 @@ COPY data ./data
 COPY config.py main.py .env ./
 
 
-CMD [ "uvicorn", "main:app", "--reload", "--host", "0.0.0.0" ]
+CMD [ "python", "main.py" ]

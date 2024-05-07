@@ -1,31 +1,14 @@
-from fastapi import FastAPI, APIRouter
-from app.routers import anoncreds, registry, resolver, vc_api, converter
-from app.metadata import tags_metadata
+import uvicorn
+import os
+from dotenv import load_dotenv
+from app.controllers import askar
 from config import settings
+import asyncio
 
-app = FastAPI(
-    title=settings.PROJECT_TITLE,
-    version=settings.PROJECT_VERSION,
-    description=settings.PROJECT_DESCRIPTION,
-    contact=settings.PROJECT_CONTACT,
-    license_info=settings.PROJECT_LICENSE_INFO,
-)
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, ".env"))
 
-
-api_router = APIRouter()
-
-@api_router.get(
-    "/.well-known/did.json", 
-    tags=["WellKnownDID"], 
-    summary="Well-known DID"
-)
-async def well_known_did():
-    return settings.DID_DOC
-
-api_router.include_router(registry.router)
-api_router.include_router(resolver.router)
-api_router.include_router(anoncreds.router)
-api_router.include_router(converter.router)
-api_router.include_router(vc_api.router)
-
-app.include_router(api_router)
+if __name__ == "__main__":
+    # Provision askar store
+    asyncio.run(askar.provision_store(settings.ASKAR_KEY))
+    uvicorn.run("app.api:app", host="0.0.0.0", port=8000, workers=4)

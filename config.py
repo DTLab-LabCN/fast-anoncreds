@@ -1,6 +1,7 @@
 from pydantic import BaseSettings
 import os
 from dotenv import load_dotenv
+from aries_askar.bindings import generate_raw_key
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, ".env"))
@@ -27,31 +28,11 @@ class Settings(BaseSettings):
     }
 
     DOMAIN = os.environ['DOMAIN']
-    DID_DOC = {
-        "@context": [
-            "https://www.w3.org/ns/did/v1",
-            "https://w3id.org/security/suites/jws-2020/v1"
-        ],
-        "id":f"did:web:{DOMAIN}",
-        "verificationMethod": [
-            {
-            "id": f"did:web:{DOMAIN}#key-1",
-            "type": "JsonWebKey2020",
-            "controller": f"did:web:{DOMAIN}",
-            "publicKeyJwk": {
-                "crv": "Ed25519",
-                "kty": "OKP",
-                "x": os.environ["PUBLIC_JWK"]
-            }
-            }
-        ],
-        "service": [
-            {
-                "id": f"did:web:{DOMAIN}#registry",
-                "type": "AnonCredsRegistry",
-                "serviceEndpoint": f"https://{DOMAIN}/registry"
-            }
-        ]
-    }
+    DID_WEB_BASE: str = f"did:web:{DOMAIN}"
+    HTTPS_BASE: str = f"https://{DOMAIN}"
+    
+    ASKAR_KEY: str = generate_raw_key(os.environ["ASKAR_SEED"])
+    
+    POSTGRES_URI: str = os.environ["POSTGRES_URI"]
 
 settings = Settings()

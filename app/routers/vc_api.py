@@ -2,7 +2,8 @@ from fastapi import APIRouter, Body, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from config import settings
-from app.models import CredentialsIssueBody
+from app.models import IssueCredentialRequest
+from app.controllers import anoncreds
 import json
 import base64
 from pprint import pprint
@@ -23,16 +24,18 @@ router = APIRouter()
     tags=["VC-API"], 
     summary="Issue VC"
 )
-async def post_schema(schema: CredentialsIssueBody):
-    return ""
+async def issue_credential(request_body: IssueCredentialRequest):
+    credential = vars(request_body)['credential']
+    credential = anoncreds.self_issuance(credential)
+    return credential
 
-@router.post(
-    "/credentials/verify", 
-    tags=["VC-API"], 
-    summary="Verify VC"
-)
-async def post_schema(schema: CredentialsIssueBody):
-    return ""
+# @router.post(
+#     "/credentials/verify", 
+#     tags=["VC-API"], 
+#     summary="Verify VC"
+# )
+# async def post_schema(schema: CredentialsIssueBody):
+#     return ""
 
 # @router.post(
 #     "/presentations/request", 
@@ -42,18 +45,18 @@ async def post_schema(schema: CredentialsIssueBody):
 # async def post_schema(schema: CredentialsIssueBody):
 #     return ""
 
-@router.post(
-    "/presentations/prove", 
-    tags=["VC-API"], 
-    summary="Generate Presentation"
-)
-async def post_schema(schema: CredentialsIssueBody):
-    return ""
+# @router.post(
+#     "/presentations/prove", 
+#     tags=["VC-API"], 
+#     summary="Generate Presentation"
+# )
+# async def post_schema(schema: CredentialsIssueBody):
+#     return ""
 
-@router.post(
-    "/presentations/verify", 
-    tags=["VC-API"], 
-    summary="Verify Presentation"
-)
-async def post_schema(schema: CredentialsIssueBody):
-    return ""
+# @router.post(
+#     "/presentations/verify", 
+#     tags=["VC-API"], 
+#     summary="Verify Presentation"
+# )
+# async def post_schema(schema: CredentialsIssueBody):
+#     return ""

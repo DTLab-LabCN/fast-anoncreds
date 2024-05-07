@@ -8,12 +8,55 @@ services:
     image: fast-anoncreds
     env_file:
       - .env
-    depends_on:
-      - redis
     ports:
       - "8000:8000"
 
-  redis:
-    image: redis
+  agent:
+    build:
+      context: ../aries-cloudagent-python
+      dockerfile: docker/Dockerfile
+    container_name: agent
+    restart: unless-stopped
+    entrypoint: ["aca-py", "start"]
+    command: [
+      '--no-ledger',
+      '--endpoint', 'http://agent:8021',
+      '--admin', '0.0.0.0', '8020',
+      '--outbound-transport', 'http',
+      '--inbound-transport', 'http', '0.0.0.0', '8021'
+    ]
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - "8000:8000"
+      - 5432:5432
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      - --certificatesresolvers.myresolver.acme.email=${LETSENCRYPT_EMAIL}
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+    ports:
+      - 443:443
+    volumes:
+      - letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  letsencrypt:
+  postgres_data:
